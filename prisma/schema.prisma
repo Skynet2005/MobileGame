@@ -1,0 +1,263 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  passwordHash String
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  lastLogin    DateTime?   @map("last_login")
+  isActive     Boolean     @default(true) @map("is_active")
+  settings     String
+  characters   Character[]
+
+  @@map("accounts")
+}
+
+model Character {
+  id          String    @id @default(uuid())
+  accountId   String    @map("account_id")
+  name        String
+  imageUrl    String?   @map("image_url")
+  isOnline    Boolean   @default(false) @map("is_online")
+  level       Int       @default(1)
+  lastSeen    DateTime? @map("last_seen")
+  allianceTag String?   @map("alliance_tag")
+  allianceId  String?   @map("alliance_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  account                Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  profile                PlayerProfile?
+  alliance               Alliance?        @relation("AllianceLeader")
+  allianceMembership     AllianceMember[]
+  sentFriendRequests     FriendRequest[]  @relation("SentFriendRequests")
+  receivedFriendRequests FriendRequest[]  @relation("ReceivedFriendRequests")
+  friends                Friend[]         @relation("CharacterFriends")
+  friendOf               Friend[]         @relation("FriendOf")
+  blocked                Blacklist[]      @relation("Blocker")
+  blockedBy              Blacklist[]      @relation("Blocked")
+  furnaces               PlayerFurnace[]
+  notifications          Notification[]
+  chatMessages           ChatMessage[]
+  chatMemberships        ChatMember[]
+
+  @@map("characters")
+}
+
+model PlayerProfile {
+  id             String   @id @default(uuid())
+  characterId    String   @unique @map("character_id")
+  power          Int      @default(0)
+  kills          Int      @default(0)
+  furnaceLevel   Int      @default(1) @map("furnace_level")
+  state          Int      @default(0)
+  worldLocationX Int      @default(0) @map("world_location_x")
+  worldLocationY Int      @default(0) @map("world_location_y")
+  troops         String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@map("player_profiles")
+}
+
+model Alliance {
+  id                String   @id @default(uuid())
+  name              String
+  tag               String   @unique
+  leaderId          String   @unique @map("leader_id")
+  banner            String // JSON string of AllianceBanner
+  decree            String   @default("") // Alliance decree/description
+  recruitingSetting String   @map("recruiting_setting")
+  preferredLanguage String   @map("preferred_language")
+  maxMembers        Int      @default(50) @map("max_members")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  leader       Character             @relation("AllianceLeader", fields: [leaderId], references: [id])
+  members      AllianceMember[]
+  applications AllianceApplication[]
+  ChatChannel  ChatChannel[]
+
+  @@map("alliances")
+}
+
+model AllianceMember {
+  allianceId  String   @map("alliance_id")
+  characterId String   @map("character_id")
+  rank        String // R0-R5
+  joinedAt    DateTime @default(now()) @map("joined_at")
+
+  alliance  Alliance  @relation(fields: [allianceId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@id([allianceId, characterId])
+  @@map("alliance_members")
+}
+
+enum ApplicationStatus {
+  pending
+  accepted
+  rejected
+}
+
+model AllianceApplication {
+  id            String            @id @default(uuid())
+  allianceId    String            @map("alliance_id")
+  characterId   String            @map("character_id")
+  characterName String            @map("character_name")
+  power         Int
+  status        ApplicationStatus
+  appliedAt     DateTime          @default(now()) @map("applied_at")
+  processedAt   DateTime?         @map("processed_at")
+  processedBy   String?           @map("processed_by")
+
+  alliance Alliance @relation(fields: [allianceId], references: [id], onDelete: Cascade)
+
+  @@unique([allianceId, characterId])
+  @@map("alliance_applications")
+}
+
+model ChatMessage {
+  id          String      @id @default(uuid())
+  content     String
+  channelId   String
+  characterId String
+  allianceTag String?
+  allianceId  String?
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  channel     ChatChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  character   Character   @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([channelId])
+  @@index([characterId])
+  @@index([allianceId])
+  @@map("chat_messages")
+}
+
+model ChatChannel {
+  id          String        @id @default(uuid())
+  name        String
+  type        String        @default("world")
+  description String?
+  isPrivate   Boolean       @default(false)
+  allianceId  String?
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  messages    ChatMessage[]
+  members     ChatMember[]
+  alliance    Alliance?     @relation(fields: [allianceId], references: [id], onDelete: SetNull)
+
+  @@index([type])
+  @@index([allianceId])
+  @@map("chat_channels")
+}
+
+model ChatMember {
+  id          String      @id @default(uuid())
+  channelId   String
+  characterId String
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  channel     ChatChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  character   Character   @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, characterId])
+  @@index([channelId])
+  @@index([characterId])
+  @@map("chat_members")
+}
+
+model Friend {
+  id          String   @id @default(uuid())
+  characterId String   @map("character_id")
+  friendId    String   @map("friend_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  character Character @relation("CharacterFriends", fields: [characterId], references: [id], onDelete: Cascade)
+  friend    Character @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, friendId])
+  @@map("friends")
+}
+
+model FriendRequest {
+  id         String   @id @default(uuid())
+  senderId   String   @map("sender_id")
+  receiverId String   @map("receiver_id")
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  sender   Character @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver Character @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@map("friend_requests")
+}
+
+model Blacklist {
+  id        String   @id @default(uuid())
+  blockerId String   @map("blocker_id")
+  blockedId String   @map("blocked_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  blocker Character @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked Character @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@map("blacklist")
+}
+
+model WorldResource {
+  id        String   @id @default(uuid())
+  x         Int
+  y         Int
+  type      String
+  value     Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([x, y])
+  @@map("world_resources")
+}
+
+model PlayerFurnace {
+  id          String   @id @default(uuid())
+  characterId String   @map("character_id")
+  x           Int
+  y           Int
+  size        Int      @default(1)
+  color       Int
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([x, y])
+  @@map("player_furnaces")
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  characterId String   @map("character_id")
+  type        String
+  title       String
+  content     String
+  isRead      Boolean  @default(false) @map("is_read")
+  sourceId    String?  @map("source_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}

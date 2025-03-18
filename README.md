@@ -1,36 +1,133 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Skynetic's World Game
 
-## Getting Started
+A modern, multiplayer web-based game built with Next.js, Three.js, and WebSocket technology. This project combines real-time 3D graphics with multiplayer functionality and a chat system.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **3D Game Environment** - Built with Three.js
+- **Real-time Multiplayer** - WebSocket-based multiplayer system
+- **Chat System** - Real-time chat functionality
+- **Modern UI** - Built with Tailwind CSS and Headless UI
+- **Authentication** - Secure user authentication system
+- **Database Integration** - Prisma ORM with SQLite database
+
+## 🛠️ Tech Stack
+
+- **Frontend:**
+  - Next.js 15.2.2
+  - React 19
+  - Three.js
+  - Tailwind CSS
+  - Headless UI
+
+- **Backend:**
+  - Node.js
+  - WebSocket (ws)
+  - Prisma ORM
+  - SQLite Database
+
+- **Development Tools:**
+  - TypeScript
+  - ESLint
+  - Prisma Studio
+  - Concurrent Development Server
+
+## 🏗️ Project Structure
+
+```
+src/
+├── app/         # Next.js app router pages
+├── chat/        # WebSocket chat implementation
+├── components/  # Reusable React components
+├── database/    # Database configurations
+├── lib/         # Utility functions and helpers
+├── services/    # Business logic and services
+├── system/      # Core game system logic
+├── types/       # TypeScript type definitions
+└── ui/          # UI components and layouts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚦 Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Prerequisites
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Node.js 18+ (LTS recommended)
+- npm or yarn
+- Git
 
-## Learn More
+### Installation
 
-To learn more about Next.js, take a look at the following resources:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Skynet2005/MobileGame.git
+   cd MobileGame
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. Set up the database:
+   ```bash
+   npm run prisma:generate
+   npm run prisma:migrate
+   ```
 
-## Deploy on Vercel
+4. Create a .env file with required environment variables (see .env.example)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Development
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run the development server:
+
+```bash
+# Run Next.js frontend only
+npm run dev
+
+# Run chat server only
+npm run dev:chat
+
+# Run both frontend and chat server
+npm run dev:all
+```
+
+### Database Management
+
+```bash
+# Generate Prisma client
+npm run prisma:generate
+
+# Run database migrations
+npm run prisma:migrate
+
+# Open Prisma Studio
+npm run prisma:studio
+```
+
+## 🎮 Game Features
+
+- 3D world exploration
+- Real-time multiplayer interaction
+- In-game chat system
+- Character customization
+- Game progression system
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Feel free to use, modify, and distribute this code as per the terms of the MIT License.
+
+## 🙏 Acknowledgments
+
+- Three.js community for 3D graphics support
+- Next.js team for the amazing framework
+- All contributors and supporters of the project
